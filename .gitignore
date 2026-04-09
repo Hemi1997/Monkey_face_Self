@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.pyc
+
+# Data (VERY IMPORTANT)
+data/
+*.mp4
+*.mat
+*.csv
+
