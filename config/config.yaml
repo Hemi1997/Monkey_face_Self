@@ -1,0 +1,79 @@
+Task: macaque_face_v2
+scorer: reza
+date: Mar30
+multianimalproject: false
+identity: null
+project_path: C:\Users\hseyed\Documents\Python\Monkey_face_Self\dlc_projects\macaque_face_v2-reza-2026-03-30
+engine: pytorch
+video_sets:
+  ? C:\Users\hseyed\Documents\Python\Monkey_face_Self\dlc_projects\macaque_face_v2-reza-2026-03-30\videos\WIN_20251208_15_27_08_Pro.mp4
+  : crop: 0, 1280, 0, 720
+  ? C:\Users\hseyed\Documents\Python\Monkey_face_Self\dlc_projects\macaque_face_v2-reza-2026-03-30\videos\WIN_20260313_16_47_51_Pro.mp4
+  : crop: 0, 1280, 0, 720
+bodyparts:
+- RightEarTop_High
+- RightEar_Outer
+- RightEarTop_Join
+- OutlineTop_Mid
+- OutlineTop_Right
+- OutlineRight_Brow
+- OutlineRight_Indent
+- OutlineRight_Cheek
+- OutlineRight_Mouth
+- OutlineLeft_Indent
+- OutlineLeft_Brow
+- OutlineTop_Left
+- Eyes_MidPoint
+- RightEye_Inner
+- RightEye_Top
+- RightEye_Outer
+- RightEye_Bottom
+- RightEye_Pupil
+- LeftEye_Inner
+- LeftEye_Top
+- LeftEye_Outer
+- LeftEye_Bottom
+- LeftEye_Pupil
+- RightBrow_Outer
+- RightBrow_Top
+- RightBrow_Inner
+- Brow_MidPoint
+- LeftBrow_Inner
+- LeftBrow_Top
+- LeftBrow_Outer
+- RightNostrils_Top
+- RightNostrils_Bottom
+- NostrilsTop_Centre
+- RightNostrils_Tip
+- UpperLip_Center
+- UpperLip_Mid
+- LowerLip_Mid
+- LowerLip_Center
+start: 0
+stop: 1
+numframes2pick: 60
+skeleton: []
+skeleton_color: black
+pcutoff: 0.6
+dotsize: 5
+alphavalue: 0.7
+colormap: rainbow
+TrainingFraction:
+- 0.95
+iteration: 0
+default_net_type: resnet_101
+default_augmenter: default
+snapshotindex: -1
+detector_snapshotindex: -1
+batch_size: 8
+detector_batch_size: 1
+cropping: false
+x1: 0
+x2: 640
+y1: 277
+y2: 624
+corner2move2:
+- 50
+- 50
+move2corner: true
+SuperAnimalConversionTables: null
