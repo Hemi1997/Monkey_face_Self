@@ -3,4 +3,4 @@ PROJECT_NAME: macaque_face_v2
 fps: 30.0
 project_path: C:\Users\hseyed\Documents\Python\Monkey_face_Self\AU_analysis
 target_code: 40
-window_sec: 1
+window_sec: 1.5

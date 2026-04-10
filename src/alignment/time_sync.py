@@ -7,6 +7,17 @@ import cv2
 import pandas as pd
 from datetime import datetime, timedelta
 
+
+def convert_to_datetime(arr):
+    return datetime(
+        int(arr[0]),
+        int(arr[1]),
+        int(arr[2]),
+        int(arr[3]),
+        int(arr[4]),
+        int(arr[5])
+    )
+
 def mat_struct_to_dict(obj):
     """
     Recursively convert mat_struct to dict
@@ -156,7 +167,9 @@ def Behavior_parser(file_path, video_start_time, fps, window_sec=1.0, target_cod
 
         try:
             trial_number = trial.Trial
-            trial_datetime = trial.TrialDateTime
+            trial_datetime_arr = trial.TrialDateTime
+            trial_datetime = convert_to_datetime(trial_datetime_arr)
+
 
             code_times = trial.BehavioralCodes.CodeTimes
             code_numbers = trial.BehavioralCodes.CodeNumbers
