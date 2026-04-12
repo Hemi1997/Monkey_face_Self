@@ -28,9 +28,14 @@ AU:
   AU1_2:
     features:
     - - OutlineRight_Indent
-      - ' RightBrow_Outer'
+      - RightBrow_Outer
     - - NostrilsTop_Centre
       - Brow_MidPoint
+    ratios:
+    - - - NostrilsTop_Centre
+        - Brow_MidPoint
+      - - Brow_MidPoint
+        - OutlineTop_Mid
   AU25_26:
     features:
     - - UpperLip_Center
@@ -39,6 +44,11 @@ AU:
     features:
     - - Brow_MidPoint
       - NostrilsTop_Centre
+    ratios:
+    - - - NostrilsTop_Centre
+        - Brow_MidPoint
+      - - Brow_MidPoint
+        - OutlineTop_Mid
   AU43_45:
     features:
     - - RightEye_Top
@@ -66,8 +76,9 @@ AU:
       - RightNostrils_Top
 EXPERIMENTER: reza
 PROJECT_NAME: macaque_face_v2
+baseline_window: 0.5
 fps: 30.0
+likelihood_threshold: 0.8
 project_path: C:\Users\hseyed\Documents\Python\Monkey_face_Self\AU_analysis
 target_code: 40
 window_sec: 1.5
-baseline_window: 0.5
