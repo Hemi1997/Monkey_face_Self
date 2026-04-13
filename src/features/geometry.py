@@ -2,18 +2,7 @@ import numpy as np
 import pandas as pd
 from src.utils import compute_distance_feature, compute_ratio, compute_scale
 
-def row_to_landmarks(row, likelihood_threshold=0.0):
-    """
-    Convert a DLC dataframe row into a landmarks dictionary.
-
-    Parameters:
-    - row: pandas Series with MultiIndex columns (bodypart, coord)
-    - likelihood_threshold: float (optional filtering)
-
-    Returns:
-    - dict: {bodypart: (x, y)}
-    """
-
+def row_to_landmarks(row):
     landmarks = {}
 
     for bodypart in row.index.get_level_values(0).unique():
@@ -22,13 +11,13 @@ def row_to_landmarks(row, likelihood_threshold=0.0):
             y = row[(bodypart, "y")]
             likelihood = row[(bodypart, "likelihood")]
         except KeyError:
-            continue  # skip if missing
-
-        # filter low-confidence points
-        if likelihood < likelihood_threshold:
             continue
 
-        landmarks[bodypart] = (x, y)
+        landmarks[bodypart] = {
+            "x": x,
+            "y": y,
+            "likelihood": likelihood
+        }
 
     return landmarks
 
@@ -43,51 +32,68 @@ def make_ratio_name(au_name, pair1, pair2):
     return f"{au_name}__ratio__{p1a}__{p1b}__{p2a}__{p2b}"
 
 
-def compute_au_features(landmarks, au_name, au_config):
-    """
-    Compute features for a single AU for one frame.
-    """
 
+def compute_au_features(landmarks, au_name, au_config, likelihood_threshold):
     features = {}
+    feature_meta = {}
 
-    # optional normalization
-    # scale = compute_scale(landmarks)
+    # --- compute scale once per frame ---
+    # scale = compute_scale(landmarks, likelihood_threshold)
 
-    # --- distances ---
+    # --- features ---
     for feature in au_config.get("features", []):
         pair = feature["pair"]
+        direction = feature.get("direction", None)
+
         name = make_feature_name(au_name, pair)
 
         value = compute_distance_feature(
             landmarks,
             pair,
+            likelihood_threshold=likelihood_threshold
         )
 
         features[name] = value
+        feature_meta[name] = direction
 
     # --- ratios ---
     for ratio in au_config.get("ratios", []):
         pair1, pair2 = ratio["pairs"]
-        val1 = compute_distance_feature(landmarks, pair1)
-        val2 = compute_distance_feature(landmarks, pair2)
+        direction = ratio.get("direction", None)
+
+        val1 = compute_distance_feature(
+            landmarks,
+            pair1,
+            likelihood_threshold=likelihood_threshold
+        )
+
+        val2 = compute_distance_feature(
+            landmarks,
+            pair2,
+            likelihood_threshold=likelihood_threshold
+        )
 
         name = make_ratio_name(au_name, pair1, pair2)
 
         features[name] = compute_ratio(val1, val2)
+        feature_meta[name] = direction
 
-    return features
+    return features, feature_meta
 
 
-def compute_all_features(landmarks, au_config):
-    """
-    Compute all AU features for one frame.
-    """
-
+def compute_all_features(landmarks, au_config, likelihood_threshold):
     all_features = {}
+    all_meta = {}
 
     for au_name, config in au_config.items():
-        au_features = compute_au_features(landmarks, au_name, config)
+        feats, meta = compute_au_features(
+            landmarks,
+            au_name,
+            config,
+            likelihood_threshold
+        )
 
-        all_features.update(au_features)
+        all_features.update(feats)
+        all_meta.update(meta)
 
-    return all_features
+    return all_features, all_meta
