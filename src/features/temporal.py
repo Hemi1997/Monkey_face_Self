@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from src.features.geometry import row_to_landmarks, compute_all_features
 
 
@@ -65,7 +66,6 @@ def extract_trial_signals(
 
 
 
-
 def process_trial_signals(
     trial_features,
     feature_meta,
@@ -74,10 +74,14 @@ def process_trial_signals(
 ):
     """
     Process raw signals:
-    - NO interpolation
-    - optional baseline normalization
-    - direction alignment
-    - activation (>= 0)
+
+    WITH baseline:
+        → baseline normalize
+        → direction alignment
+        → activation (>= 0)
+
+    WITHOUT baseline:
+        → use absolute signal (no direction, no clipping)
 
     Returns:
     - processed signals (dict)
@@ -89,29 +93,34 @@ def process_trial_signals(
 
         signal = np.array(values, dtype=float)
 
-        # --- baseline normalization (NaN-safe) ---
         if use_baseline and len(baseline_indices) > 0:
+
             baseline = np.nanmean(signal[baseline_indices])
 
             if not np.isnan(baseline):
                 signal = signal - baseline
 
-        # --- direction alignment ---
-        direction = feature_meta.get(name, "neutral")
+            # --- direction alignment ---
+            direction = feature_meta.get(name, "neutral")
 
-        if direction == "increase":
-            aligned = signal
-        elif direction == "decrease":
-            aligned = -signal
+            if direction == "increase":
+                aligned = signal
+            elif direction == "decrease":
+                aligned = -signal
+            else:
+                aligned = signal
+
+            # --- activation (keep only expression strength) ---
+            aligned = np.maximum(aligned, 0)
+
+
         else:
             aligned = signal
-
-        # --- activation (keep only expression strength) ---
-        aligned = np.maximum(aligned, 0)
 
         processed[name] = aligned
 
     return processed
+
 
 
 def compute_temporal_features(processed_signals, fps):
@@ -177,6 +186,7 @@ def compute_temporal_features(processed_signals, fps):
 
     return features
 
+
 def process_trial(
     trial_row,
     csv_pd,
@@ -191,8 +201,8 @@ def process_trial(
         csv_pd,
         au_config,
         fps,
-        baseline_window,
-        likelihood_threshold
+        likelihood_threshold,
+        baseline_window=0
     )
 
     # --- decide baseline usage ---
@@ -211,18 +221,20 @@ def process_trial(
 
     return features
 
-def build_dataset(
+
+def build_datase_flatten(
     trial_df,
     csv_pd,
     au_config,
     fps,
-    baseline_window,
-    likelihood_threshold
+    likelihood_threshold,
+    baseline_window=0
 ):
     all_rows = []
 
     for _, trial_row in trial_df.iterrows():
 
+        # --- extract features ---
         feats = process_trial(
             trial_row,
             csv_pd,
@@ -232,8 +244,107 @@ def build_dataset(
             likelihood_threshold
         )
 
-        feats["label"] = trial_row["trial_info"]
+        # --- build full row ---
+        row = {}
 
-        all_rows.append(feats)
+        # =========================
+        # METADATA
+        # =========================
+        row["trial_number"] = trial_row.get("trial_number", None)
+        row["event_frame"] = trial_row.get("event_frame", None)
 
-    return all_rows
+        # =========================
+        # LABEL
+        # =========================
+        row["label"] = trial_row.get("trial_info", None)
+
+        # =========================
+        # FEATURES
+        # =========================
+        row.update(feats)
+
+        # =========================
+        # OPTIONAL: feature quality
+        # =========================
+        row["n_features"] = len(feats)
+
+        all_rows.append(row)
+
+    # --- convert to DataFrame ---
+    dataset = pd.DataFrame(all_rows)
+
+    return dataset
+
+
+
+def dataset_to_long_format(dataset):
+    """
+    Convert flat dataset into structured long format with:
+    - AU
+    - type (feature / ratio)
+    - feature name
+    - stat
+    """
+
+    df = dataset.copy()
+
+    # -------------------------
+    # Metadata columns
+    # -------------------------
+    meta_cols = [
+        c for c in df.columns
+        if c in ["trial_number", "event_frame","label"]
+    ]
+
+    feature_cols = [c for c in df.columns if c not in meta_cols]
+
+    # -------------------------
+    # Melt
+    # -------------------------
+    long_df = df.melt(
+        id_vars=meta_cols,
+        value_vars=feature_cols,
+        var_name="feature_full",
+        value_name="value"
+    )
+
+    # -------------------------
+    # Split parts
+    # -------------------------
+    parts = long_df["feature_full"].str.split("__", expand=True)
+
+    # -------------------------
+    # AU
+    # -------------------------
+    long_df["AU"] = parts[0]
+
+    # -------------------------
+    # TYPE (feature vs ratio)
+    # -------------------------
+    long_df["type"] = parts[1].apply(
+        lambda x: "ratio" if x == "ratio" else "feature"
+    )
+
+    # -------------------------
+    # FEATURE NAME
+    # -------------------------
+    def extract_feature(row_parts):
+        if row_parts[1] == "ratio":
+            # skip "ratio" keyword
+            return "__".join(row_parts[2:-1])
+        else:
+            return "__".join(row_parts[1:-1])
+
+    long_df["feature"] = parts.apply(extract_feature, axis=1)
+
+    # -------------------------
+    # STAT
+    # -------------------------
+    long_df["stat"] = parts.iloc[:, -1]
+
+    # -------------------------
+    # Cleanup
+    # -------------------------
+    long_df = long_df.drop(columns=["feature_full"])
+
+    return long_df
