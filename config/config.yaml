@@ -134,3 +134,5 @@ target_code: 40
 window_sec: 1.5
 baseline_window: 0.5
 likelihood_threshold : 0.8
+model_type : "svm"
+n_splits : 5
