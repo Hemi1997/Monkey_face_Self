@@ -144,3 +144,48 @@ def evaluate_per_au(dataset, stats="all"):
 
     return results
 
+
+def evaluate_au_ablation(dataset, stats="all"):
+    results = {}
+
+    y = dataset["label"]
+
+    # -------------------------
+    # FULL MODEL
+    # -------------------------
+    X_full = dataset.drop(columns=["label"], errors="ignore")
+
+    # apply stat selection
+    X_full = select_feature_stats(X_full, stats)
+    full_metrics = run_classifier(X_full, y)
+
+    # -------------------------
+    # AU MAP
+    # -------------------------
+    au_map = get_au_columns(dataset)
+
+    for au, cols in au_map.items():
+
+        # select only relevant columns after stat filtering
+        cols_filtered = [c for c in cols if c in X_full.columns]
+
+        if len(cols_filtered) == 0:
+            continue
+
+        # -------------------------
+        # REMOVE THIS AU
+        # -------------------------
+        X_drop = X_full.drop(columns=cols_filtered, errors="ignore")
+
+        if X_drop.shape[1] == 0:
+            continue
+
+        metrics = run_classifier(X_drop, y)
+
+        results[au] = {
+            "accuracy_drop": full_metrics["accuracy"] - metrics["accuracy"],
+            "f1_drop": full_metrics["f1"] - metrics["f1"],
+            "auc_drop": full_metrics["auc"] - metrics["auc"],
+        }
+
+    return results
