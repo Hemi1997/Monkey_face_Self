@@ -1,6 +1,6 @@
 import numpy as np 
 import pandas as pd
-from src.utils import compute_distance_feature, compute_ratio, compute_scale
+from src.utils.utils import compute_distance_feature, compute_ratio, compute_scale
 
 def row_to_landmarks(row):
     landmarks = {}

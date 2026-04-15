@@ -1,138 +1,131 @@
 AU:
   AU12:
     features:
-      - pair:
-          - OutlineRight_Mouth
-          - OutlineRight_Cheek
-        direction: decrease
-      - pair:
-          - OutlineRight_Mouth
-          - UpperLip_Center
-        direction: increase
-      - pair:
-          - UpperLip_Center
-          - LowerLip_Center
-        direction: neutral
+    - direction: decrease
+      pair:
+      - OutlineRight_Mouth
+      - OutlineRight_Cheek
+    - direction: increase
+      pair:
+      - OutlineRight_Mouth
+      - UpperLip_Center
+    - direction: neutral
+      pair:
+      - UpperLip_Center
+      - LowerLip_Center
     ratios:
-      - pairs:
-          - - OutlineRight_Mouth
-            - UpperLip_Center
-          - - UpperLip_Center
-            - LowerLip_Center
-        direction: increase
-
+    - direction: increase
+      pairs:
+      - - OutlineRight_Mouth
+        - UpperLip_Center
+      - - UpperLip_Center
+        - LowerLip_Center
   AU18:
     features:
-      - pair:
-          - OutlineRight_Mouth
-          - UpperLip_Center
-        direction: decrease
-      - pair:
-          - UpperLip_Center
-          - LowerLip_Center
-        direction: neutral
-      - pair:
-          - OutlineRight_Mouth
-          - LowerLip_Center
-        direction: decrease
+    - direction: decrease
+      pair:
+      - OutlineRight_Mouth
+      - UpperLip_Center
+    - direction: neutral
+      pair:
+      - UpperLip_Center
+      - LowerLip_Center
+    - direction: decrease
+      pair:
+      - OutlineRight_Mouth
+      - LowerLip_Center
     ratios:
-      - pairs:
-          - - OutlineRight_Mouth
-            - UpperLip_Center
-          - - UpperLip_Center
-            - LowerLip_Center
-        direction: decrease
-
+    - direction: decrease
+      pairs:
+      - - OutlineRight_Mouth
+        - UpperLip_Center
+      - - UpperLip_Center
+        - LowerLip_Center
   AU1_2:
     features:
-      - pair:
-          - OutlineRight_Indent
-          - RightBrow_Outer
-        direction: increase
-      - pair:
-          - NostrilsTop_Centre
-          - Brow_MidPoint
-        direction: increase
+    - direction: increase
+      pair:
+      - OutlineRight_Indent
+      - RightBrow_Outer
+    - direction: increase
+      pair:
+      - NostrilsTop_Centre
+      - Brow_MidPoint
     ratios:
-      - pairs:
-          - - NostrilsTop_Centre
-            - Brow_MidPoint
-          - - Brow_MidPoint
-            - OutlineTop_Mid
-        direction: increase
-
+    - direction: increase
+      pairs:
+      - - NostrilsTop_Centre
+        - Brow_MidPoint
+      - - Brow_MidPoint
+        - OutlineTop_Mid
   AU25_26:
     features:
-      - pair:
-          - UpperLip_Center
-          - LowerLip_Center
-        direction: increase
-
+    - direction: increase
+      pair:
+      - UpperLip_Center
+      - LowerLip_Center
   AU41:
     features:
-      - pair:
-          - Brow_MidPoint
-          - NostrilsTop_Centre
-        direction: decrease
+    - direction: decrease
+      pair:
+      - Brow_MidPoint
+      - NostrilsTop_Centre
     ratios:
-      - pairs:
-          - - NostrilsTop_Centre
-            - Brow_MidPoint
-          - - Brow_MidPoint
-            - OutlineTop_Mid
-        direction: decrease
-
+    - direction: decrease
+      pairs:
+      - - NostrilsTop_Centre
+        - Brow_MidPoint
+      - - Brow_MidPoint
+        - OutlineTop_Mid
   AU43_45:
     features:
-      - pair:
-          - RightEye_Top
-          - RightEye_Bottom
-        direction: decrease
+    - direction: decrease
+      pair:
+      - RightEye_Top
+      - RightEye_Bottom
     ratios:
-      - pairs:
-          - - RightEye_Top
-            - RightEye_Bottom
-          - - RightEye_Inner
-            - RightEye_Outer
-        direction: decrease
-
+    - direction: decrease
+      pairs:
+      - - RightEye_Top
+        - RightEye_Bottom
+      - - RightEye_Inner
+        - RightEye_Outer
   AU6:
     features:
-      - pair:
-          - OutlineRight_Cheek
-          - OutlineRight_Indent
-        direction: increase
-      - pair:
-          - OutlineRight_Cheek
-          - OutlineRight_Brow
-        direction: increase
-
+    - direction: increase
+      pair:
+      - OutlineRight_Cheek
+      - OutlineRight_Indent
+    - direction: increase
+      pair:
+      - OutlineRight_Cheek
+      - OutlineRight_Brow
   AU9_10:
     features:
-      - pair:
-          - NostrilsTop_Centre
-          - RightNostrils_Top
-        direction: increase
-      - pair:
-          - RightNostrils_Top
-          - RightNostrils_Bottom
-        direction: increase
-      - pair:
-          - RightNostrils_Tip
-          - RightNostrils_Bottom
-        direction: increase
-      - pair:
-          - RightNostrils_Tip
-          - RightNostrils_Top
-        direction: increase
-
+    - direction: increase
+      pair:
+      - NostrilsTop_Centre
+      - RightNostrils_Top
+    - direction: increase
+      pair:
+      - RightNostrils_Top
+      - RightNostrils_Bottom
+    - direction: increase
+      pair:
+      - RightNostrils_Tip
+      - RightNostrils_Bottom
+    - direction: increase
+      pair:
+      - RightNostrils_Tip
+      - RightNostrils_Top
 EXPERIMENTER: reza
 PROJECT_NAME: macaque_face_v2
+baseline_window: 0.5
 fps: 30.0
+likelihood_threshold: 0.5
+model_type: "svm"
+n_splits: 5
 project_path: C:\Users\hseyed\Documents\Python\Monkey_face_Self\AU_analysis
 target_code: 40
-window_sec: 1.5
-baseline_window: 0.5
-likelihood_threshold : 0.8
-model_type : "svm"
-n_splits : 5
+window_sec: 1
+baseline_window : 0.5
