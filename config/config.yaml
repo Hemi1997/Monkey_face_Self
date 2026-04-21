@@ -123,9 +123,9 @@ PROJECT_NAME: macaque_face_v2
 baseline_window: 0.5
 fps: 30.0
 likelihood_threshold: 0.5
-model_type: "svm"
+model_type: svm
 n_splits: 5
 project_path: C:\Users\hseyed\Documents\Python\Monkey_face_Self\AU_analysis
 target_code: 40
 window_sec: 1
-baseline_window : 0.5
+time_window: [-0.5, 1.0, 0.01]

@@ -1,26 +1,48 @@
 # src/alignment/time_sync.py
-import re
-import scipy.io
-import h5py
 import os
-import cv2
-import pandas as pd
+import re
 from datetime import datetime, timedelta
+
+import cv2
+import h5py
+import pandas as pd
+import scipy.io
 
 
 def convert_to_datetime(arr):
-    return datetime(
-        int(arr[0]),
-        int(arr[1]),
-        int(arr[2]),
-        int(arr[3]),
-        int(arr[4]),
-        int(arr[5])
-    )
+    """
+    Convert a MATLAB-style datetime array to a Python datetime.
+
+    Expected format:
+        [year, month, day, hour, minute, second_with_fraction]
+
+    Example:
+        [2026, 3, 13, 16, 48, 10.164999999999999]
+
+    Returns:
+        datetime with microsecond precision
+    """
+    year = int(arr[0])
+    month = int(arr[1])
+    day = int(arr[2])
+    hour = int(arr[3])
+    minute = int(arr[4])
+
+    sec_float = float(arr[5])
+    second = int(sec_float)
+    microsecond = int(round((sec_float - second) * 1_000_000))
+
+    # guard against rare rounding edge case
+    if microsecond == 1_000_000:
+        second += 1
+        microsecond = 0
+
+    return datetime(year, month, day, hour, minute, second, microsecond)
+
 
 def mat_struct_to_dict(obj):
     """
-    Recursively convert mat_struct to dict
+    Recursively convert mat_struct to dict.
     """
     if isinstance(obj, list):
         return [mat_struct_to_dict(o) for o in obj]
@@ -34,10 +56,11 @@ def mat_struct_to_dict(obj):
 
     return obj
 
+
 def load_mat_file(file_path):
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
-    
+
     try:
         data = scipy.io.loadmat(file_path, struct_as_record=False, squeeze_me=True)
         data = {k: v for k, v in data.items() if not k.startswith("__")}
@@ -48,8 +71,9 @@ def load_mat_file(file_path):
         return data
 
     except NotImplementedError:
-        with h5py.File(file_path, 'r') as f:
+        with h5py.File(file_path, "r") as f:
             return {k: f[k][()] for k in f.keys()}
+
 
 # -----------------------------
 # 1. Parse video start time
@@ -59,7 +83,7 @@ def parse_video_start_time(filename):
     Extract timestamp from filename.
 
     Expected format:
-    monkey_20230801_10-00-00.mp4
+        monkey_20230801_10-00-00.mp4
 
     Returns:
         datetime object
@@ -75,19 +99,20 @@ def parse_video_start_time(filename):
 
     return datetime.strptime(f"{date_part} {time_part}", "%Y%m%d %H:%M:%S")
 
+
 # -----------------------------
 # 2. Convert behavior time → frame
 # -----------------------------
 def get_event_time_from_trial(trial_datetime, code_times, code_numbers, target_code=40):
     """
     Extract event time (absolute datetime) for given code.
-    
+
     code_times: in milliseconds
     """
     for t, c in zip(code_times, code_numbers):
         if c == target_code:
-            return trial_datetime + timedelta(milliseconds=t)
-    
+            return trial_datetime + timedelta(milliseconds=float(t))
+
     raise ValueError(f"Code {target_code} not found")
 
 
@@ -95,10 +120,8 @@ def compute_event_frame(event_time, video_start_time, fps):
     """
     Convert event timestamp to frame index.
 
-    Args:
-        event_time (datetime)
-        video_start_time (datetime)
-        fps (float)
+    Uses rounding to the nearest frame rather than flooring.
+    This is better when timestamps contain sub-second precision.
 
     Returns:
         int: frame index
@@ -109,7 +132,7 @@ def compute_event_frame(event_time, video_start_time, fps):
     if seconds < 0:
         raise ValueError("Event occurs before video start")
 
-    return int(seconds * fps)
+    return int(round(seconds * fps))
 
 
 # -----------------------------
@@ -119,22 +142,23 @@ def get_frame_window(event_frame, fps, window_sec=1.0):
     """
     Get frame window around event.
 
-    Args:
-        event_frame (int)
-        fps (float)
-        window_sec (float)
-
     Returns:
         (start_frame, end_frame)
     """
     start = event_frame
-    end = int(event_frame + window_sec * fps)
+    end = int(round(event_frame + window_sec * fps))
     return start, end
 
 
-def get_trial_frames_from_behavior(video_start_time, trial_datetime,
-                                    code_times, code_numbers, fps, window_sec=1.0,target_code = 40):
-    
+def get_trial_frames_from_behavior(
+    video_start_time,
+    trial_datetime,
+    code_times,
+    code_numbers,
+    fps,
+    window_sec=1.0,
+    target_code=40
+):
     event_time = get_event_time_from_trial(
         trial_datetime,
         code_times,
@@ -153,23 +177,17 @@ def get_trial_frames_from_behavior(video_start_time, trial_datetime,
     }
 
 
-
-
 def Behavior_parser(file_path, video_start_time, fps, window_sec=1.0, target_code=40):
-
     mat_data = load_mat_file(file_path)
 
     trials = mat_data["dataSel"]
-
     rows = []
 
     for i, trial in enumerate(trials):
-
         try:
             trial_number = trial.Trial
             trial_datetime_arr = trial.TrialDateTime
             trial_datetime = convert_to_datetime(trial_datetime_arr)
-
 
             code_times = trial.BehavioralCodes.CodeTimes
             code_numbers = trial.BehavioralCodes.CodeNumbers
@@ -187,7 +205,6 @@ def Behavior_parser(file_path, video_start_time, fps, window_sec=1.0, target_cod
                 fps
             )
 
-         
             event_time = get_event_time_from_trial(
                 trial_datetime,
                 code_times,
@@ -231,12 +248,10 @@ def Behavior_parser(file_path, video_start_time, fps, window_sec=1.0, target_cod
     return pd.DataFrame(rows)
 
 
-
 def get_video_info(video_path):
     """
     Extract video metadata (fps, frame count, duration)
     """
-
     cap = cv2.VideoCapture(str(video_path))
 
     if not cap.isOpened():

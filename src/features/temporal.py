@@ -123,14 +123,6 @@ def compute_temporal_features(processed_signals, fps):
             peak_idx = np.nanargmax(signal)
             features[f"{name}__time_to_peak"] = peak_idx / fps
 
-        peak = np.nanmax(signal)
-        if peak > 0:
-            threshold = 0.5 * peak
-            valid = signal[~np.isnan(signal)]
-            features[f"{name}__duration"] = np.sum(valid > threshold) / fps
-        else:
-            features[f"{name}__duration"] = 0.0
-
         clean_signal = np.nan_to_num(signal)
         features[f"{name}__auc"] = np.trapz(clean_signal)
 
